@@ -1,10 +1,8 @@
 import json
-
 from note import Note
+import os
 
-import json
-from note import Note
-
+# Function for saving note as JSON
 def save_to_file(note, filename="data/notes.json"):
     note_dict = note.to_dict()
 
@@ -50,3 +48,15 @@ def load_labels(filename="data/labels.json"):
     except json.JSONDecodeError:
         print("Error: Labels file is not valid JSON. Returning empty labels list.")
         return []  # Return an empty list if the JSON is invalid
+    
+def load_notes():
+    file_path = 'data/notes.json'  # Update with your actual file path
+    if not os.path.exists(file_path):
+        return []  # Return an empty list if the file doesn't exist
+
+    with open(file_path, 'r') as file:
+        content = file.read().strip()  # Read and strip whitespace
+        if not content:  # Check if content is empty
+            return []  # Return an empty list if the file is empty
+        return json.loads(content)  # Load the JSON data
+
