@@ -6,7 +6,7 @@ from datetime import datetime
 import json
 import os
 
-    
+
 
 class NoteApp:
     def __init__(self, root):
@@ -25,12 +25,11 @@ class NoteApp:
         self.file_menu.add_command(label="View All Notes", command=self.open_note_display)
         self.menu_bar.add_cascade(label="File", menu=self.file_menu)
 
-        # Call method to set up the GUI elements
         self.setup_ui()
 
     def open_note_display(self):
         """Method to open a new window displaying all notes."""
-        notes = load_notes()  # Assuming notes are loaded from a file
+        notes = load_notes()  
         display_window = tk.Toplevel(self.root)
         display_window.title("All Notes")
         NoteDisplay(display_window, notes)  # Pass the notes to the display class
@@ -110,12 +109,8 @@ class NoteDisplay:
 
     def __init__(self, root, notes):
         self.root = root
-        self.notes = notes  # Notes should be passed as a list of dictionaries
-
-        # Load previous settings if available
+        self.notes = notes 
         self.load_settings()
-
-        # Set up the UI
         self.setup_ui()
 
         # Bind the close event to save settings before exiting
@@ -123,7 +118,7 @@ class NoteDisplay:
 
     def open_note_display(self):
         """Method to open a new window displaying all notes."""
-        notes = load_notes()  # Assuming notes are loaded from a file
+        notes = load_notes() 
         display_window = tk.Toplevel(self.root)
         display_window.title("All Notes")
         NoteDisplay(display_window, notes)  # Pass the notes to the display class
