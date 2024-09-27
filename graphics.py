@@ -148,6 +148,7 @@ class NoteDisplay:
         self.notes = notes 
         self.load_settings()
         self.setup_ui()
+        self.sort_reverse = {col: False for col in self.tree["columns"]}
 
         # Bind the close event to save settings before exiting
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -209,7 +210,10 @@ class NoteDisplay:
                 ', '.join(note.get('character', [])),  # Join list for display
                 note.get('date'),
                 note.get('order')
-        ))
+            ))
+        for col in self.tree["columns"]:
+            self.tree.heading(col, command=lambda _col=col: self.sort_notes(_col))
+            
 
 
     def on_close(self):
@@ -268,6 +272,30 @@ class NoteDisplay:
 
         with open(self.SETTINGS_FILE, 'w') as file:
             json.dump(settings, file, indent=4)
+
+    def sort_notes(self, col):
+        """Sort the notes based on the selected column."""
+        # Determine the current sort order
+        reverse = self.sort_reverse[col]
+        notes = load_notes()
+        # Sort notes based on the selected column
+        notes.sort(key=lambda x: x[col], reverse=reverse)
+
+        # Clear the current items in the tree
+        self.tree.delete(*self.tree.get_children())
+
+        # Reinsert sorted notes
+        for note in notes:
+            self.tree.insert('', tk.END, values=(
+                note.get('content'),
+                note.get('label'),
+                ', '.join(note.get('character', [])),  # Join list for display
+                note.get('date'),
+                note.get('order')
+            ))
+
+        # Toggle the sort direction for the next click
+        self.sort_reverse[col] = not self.sort_reverse[col]
 
 
 if __name__ == "__main__":
