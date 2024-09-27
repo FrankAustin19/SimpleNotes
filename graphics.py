@@ -7,7 +7,6 @@ import json
 import os
 
 
-
 class NoteApp:
     SETTINGS_FILE = 'data/settings.json'
     def __init__(self, root):
@@ -15,7 +14,7 @@ class NoteApp:
         self.root.title("Simple Notes")
         self.root.geometry("900x100")
         self.labels = load_labels()
-        self.characters = ['PP', 'Kevin', 'Mitch', 'Alex', 'Steven R', 'Steven A', 'Party', 'DM']
+        self.characters = ['PP', 'Kevin', 'Mitch', 'Alex', 'Steven R', 'Steven A', 'Party', 'DM'] #write function to set these
         self.current_order = 0
 
         self.load_settings()
@@ -32,7 +31,7 @@ class NoteApp:
         self.setup_ui()
 
     def load_settings(self):
-        """Load current order from the settings file."""
+        #Load settings file to get current_order
         if os.path.exists(self.SETTINGS_FILE):
             with open(self.SETTINGS_FILE, 'r') as file:
                 settings = json.load(file)
@@ -43,47 +42,46 @@ class NoteApp:
             self.current_order = 0  
 
     def open_note_display(self):
-        """Method to open a new window displaying all notes."""
+        # Open Note Display Window
         notes = load_notes()  
         display_window = tk.Toplevel(self.root)
         display_window.title("All Notes")
-        NoteDisplay(display_window, notes)  # Pass the notes to the display class
+        NoteDisplay(display_window, notes)  
 
 
     def setup_ui(self):
         """Method to set up the initial UI elements."""
-        # Creating a frame for layout
+        # Frame
         self.frame = ttk.Frame(self.root, padding="10")
         self.frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 
-        # Add a text box for entering notes
+        # Content text box
         self.note_label = ttk.Label(self.frame, text="Note:")
-        self.note_label.grid(row=0, column=0, sticky=tk.W, padx=(0, 10))
-        
+        self.note_label.grid(row=0, column=0, sticky=tk.W, padx=(0, 10))        
         self.note_text = tk.Text(self.frame, height=1, width=90)
         self.note_text.grid(row=0, column=1, columnspan=6, sticky=tk.W, padx=(0, 10))  
 
-        # Add a label dropdown menu
+        # "Label" label
         self.label_label = ttk.Label(self.frame, text="Label:")
         self.label_label.grid(row=1, column=0, sticky=tk.W)
 
+        # Combobox for labels
         self.label_combobox = ttk.Combobox(self.frame, values=self.labels, state='normal', width=20)
         self.label_combobox.grid(row=1, column=1, sticky=tk.W, padx=(0, 5)) 
         self.label_combobox.set("")
         self.label_combobox.bind("<Return>", self.save_label)
 
-        # Add checkboxes for characters
+        # Checkboxes
         self.character_vars = {}
         self.character_frame = ttk.Frame(self.frame)
         self.character_frame.grid(row=1, column=2, sticky=tk.W, padx=(0, 10), columnspan=5)  
-
         for i, character in enumerate(self.characters):
             var = tk.BooleanVar()
             checkbox = ttk.Checkbutton(self.character_frame, text=character, variable=var)
             checkbox.grid(row=0, column=i, sticky=tk.W, padx=5)  
             self.character_vars[character] = var
 
-        # Add a button to save the note
+        # Save button
         self.save_button = ttk.Button(self.frame, text="Save", command=self.save_note)  
         self.save_button.grid(row=1, column=8, sticky=tk.W)  
 
@@ -113,8 +111,6 @@ class NoteApp:
         for var in self.character_vars.values():
             var.set(False)
 
-        
-
     # Function for saving labels
     def save_label(self):
         new_label = self.label_combobox.get().strip()
@@ -128,14 +124,10 @@ class NoteApp:
         elif new_label in self.labels:
             pass
     
-    def save_current_order(self):
-        """Save the current global order to the settings file."""
+    def save_current_order(self):                 #Function for keeping track of note serial numbers
         with open(self.SETTINGS_FILE, 'r') as file:
             settings = json.load(file)
-
-            # Update the current order in the settings
             settings['current_order'] = self.current_order
-
         with open(self.SETTINGS_FILE, 'w') as file:
             json.dump(settings, file, indent=4)
 
@@ -149,16 +141,14 @@ class NoteDisplay:
         self.load_settings()
         self.setup_ui()
         self.sort_reverse = {col: False for col in self.tree["columns"]}
-
-        # Bind the close event to save settings before exiting
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def open_note_display(self):
-        """Method to open a new window displaying all notes."""
+        # Method to open Note Display
         notes = load_notes() 
         display_window = tk.Toplevel(self.root)
         display_window.title("All Notes")
-        NoteDisplay(display_window, notes)  # Pass the notes to the display class
+        NoteDisplay(display_window, notes)
 
     def setup_ui(self):
         # Create a frame for the Treeview
@@ -201,13 +191,13 @@ class NoteDisplay:
         self.scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
 
     def populate_table(self):
-        """Insert the notes into the table"""
-        notes = load_notes()  # Load notes before populating
+        # Insert notes into table
+        notes = load_notes()  
         for note in notes:
             self.tree.insert('', tk.END, values=(
                 note.get('content'),
                 note.get('label'),
-                ', '.join(note.get('character', [])),  # Join list for display
+                ', '.join(note.get('character', [])),  
                 note.get('date'),
                 note.get('order')
             ))
@@ -217,9 +207,8 @@ class NoteDisplay:
 
 
     def on_close(self):
-        """Save window and column settings when the window is closed."""
         # Get window geometry (size and position)
-        window_geometry = self.root.geometry()  # Format is "widthxheight+x+y"
+        window_geometry = self.root.geometry() 
 
         # Get column widths
         column_widths = {col: self.tree.column(col, width=None) for col in self.tree["columns"]}
@@ -238,7 +227,7 @@ class NoteDisplay:
         self.root.destroy()
 
     def load_settings(self):
-        """Load window geometry and column widths from a file."""
+        # Load geometry and order settings
         if os.path.exists(self.SETTINGS_FILE):
             with open(self.SETTINGS_FILE, 'r') as file:
                 settings = json.load(file)
@@ -252,7 +241,7 @@ class NoteDisplay:
             self.current_order = 0
 
     def load_column_widths(self):
-        """Load column widths from the saved settings."""
+        # Load column widths for display window preferences
         if os.path.exists(self.SETTINGS_FILE):
             with open(self.SETTINGS_FILE, 'r') as file:
                 settings = json.load(file)
@@ -263,7 +252,7 @@ class NoteDisplay:
                     self.tree.column(col, width=width)
     
     def save_current_order(self):
-        """Save the current global order to the settings file."""
+        # Save the note serial number
         with open(self.SETTINGS_FILE, 'r') as file:
             settings = json.load(file)
 
@@ -274,7 +263,6 @@ class NoteDisplay:
             json.dump(settings, file, indent=4)
 
     def sort_notes(self, col):
-        """Sort the notes based on the selected column."""
         # Determine the current sort order
         reverse = self.sort_reverse[col]
         notes = load_notes()
