@@ -7,6 +7,7 @@ def save_to_file(note, filename="data/notes.json"):
     note_dict = note.to_dict()
 
     try:
+        
         with open(filename, 'r') as file:
             # Check if the file is empty
             if file.readable() and file.read().strip() == "":

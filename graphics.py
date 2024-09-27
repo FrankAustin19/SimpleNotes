@@ -9,12 +9,16 @@ import os
 
 
 class NoteApp:
+    SETTINGS_FILE = 'data/settings.json'
     def __init__(self, root):
         self.root = root
         self.root.title("Simple Notes")
         self.root.geometry("900x100")
         self.labels = load_labels()
         self.characters = ['PP', 'Kevin', 'Mitch', 'Alex', 'Steven R', 'Steven A', 'Party', 'DM']
+        self.current_order = 0
+
+        self.load_settings()
 
         # Setup the menu bar
         self.menu_bar = tk.Menu(self.root)
@@ -26,6 +30,17 @@ class NoteApp:
         self.menu_bar.add_cascade(label="File", menu=self.file_menu)
 
         self.setup_ui()
+
+    def load_settings(self):
+        """Load current order from the settings file."""
+        if os.path.exists(self.SETTINGS_FILE):
+            with open(self.SETTINGS_FILE, 'r') as file:
+                settings = json.load(file)
+
+            
+            self.current_order = settings.get('current_order', 0)  
+        else:
+            self.current_order = 0  
 
     def open_note_display(self):
         """Method to open a new window displaying all notes."""
@@ -74,16 +89,25 @@ class NoteApp:
 
     # Function for saving notes
     def save_note(self):
+        # Define dictionary variables
         content = self.note_text.get("1.0", tk.END).strip()
         label =self.label_combobox.get()
         characters = [character for character, var in self.character_vars.items() if var.get()]
         date = datetime.today().date()
 
-        note = Note(content=content, label=label, character = characters, date=date)
+        #Load existing notes file and increment note order
+        notes = load_notes()
+        self.current_order += 1
 
+        # Create new note
+        note = Note(content=content, label=label, character = characters, date=date, order=self.current_order)
+
+        #Save new note, new label, and current order
         save_to_file(note)
         self.save_label()
+        self.save_current_order()
 
+        # Clear fields
         self.note_text.delete("1.0", tk.END)
         self.label_combobox.set("")
         for var in self.character_vars.values():
@@ -103,6 +127,18 @@ class NoteApp:
 
         elif new_label in self.labels:
             pass
+    
+    def save_current_order(self):
+        """Save the current global order to the settings file."""
+        with open(self.SETTINGS_FILE, 'r') as file:
+            settings = json.load(file)
+
+            # Update the current order in the settings
+            settings['current_order'] = self.current_order
+
+        with open(self.SETTINGS_FILE, 'w') as file:
+            json.dump(settings, file, indent=4)
+
 
 class NoteDisplay:
     SETTINGS_FILE = 'data/settings.json'
@@ -187,7 +223,8 @@ class NoteDisplay:
         # Save the settings
         settings = {
             'geometry': window_geometry,
-            'column_widths': column_widths
+            'column_widths': column_widths,
+            'current_order': self.current_order
         }
 
         with open(self.SETTINGS_FILE, 'w') as file:
@@ -205,6 +242,11 @@ class NoteDisplay:
             # Apply window geometry (size and position)
             self.root.geometry(settings.get('geometry', '800x600'))
 
+            self.current_order = settings.get('current_order', 0) 
+        
+        else:
+            self.current_order = 0
+
     def load_column_widths(self):
         """Load column widths from the saved settings."""
         if os.path.exists(self.SETTINGS_FILE):
@@ -215,6 +257,17 @@ class NoteDisplay:
             for col, width in column_widths.items():
                 if width:
                     self.tree.column(col, width=width)
+    
+    def save_current_order(self):
+        """Save the current global order to the settings file."""
+        with open(self.SETTINGS_FILE, 'r') as file:
+            settings = json.load(file)
+
+            # Update the current order in the settings
+            settings['current_order'] = self.current_order
+
+        with open(self.SETTINGS_FILE, 'w') as file:
+            json.dump(settings, file, indent=4)
 
 
 if __name__ == "__main__":
